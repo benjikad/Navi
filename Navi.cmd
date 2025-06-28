@@ -25,7 +25,6 @@ set TEMP_DIR=tempnavi
 
 if exist ".git\" (
     REM We're in a git repo, check if updates are available
-    echo Checking for updates...
     git fetch origin main >nul 2>&1
     
     REM Compare local and remote commit hashes
@@ -33,22 +32,20 @@ if exist ".git\" (
     for /f %%i in ('git rev-parse origin/main') do set REMOTE_HASH=%%i
     
     if "!LOCAL_HASH!" neq "!REMOTE_HASH!" (
-        echo Updates found. Installing...
         git reset --hard HEAD >nul 2>&1
         git pull origin main >nul 2>&1
-        call npm install >nul 2>&1
-    ) else (
-        echo Navi is up to date.
     )
 ) else (
     REM Not a git repo, do initial clone
-    echo Installing Navi...
     if exist "%TEMP_DIR%" rmdir /s /q "%TEMP_DIR%"
     git clone %REPO_URL% %TEMP_DIR% >nul 2>&1
     xcopy "%TEMP_DIR%\*" "." /E /Y /Q >nul 2>&1
     rmdir /s /q "%TEMP_DIR%" >nul 2>&1
-    call npm install >nul 2>&1
+    echo Installing Navi...
 )
+
+REM Run npm install only once after initial setup or if node_modules is missing
+call npm install >nul 2>&1
 
 REM Check if dependencies are installed
 if not exist "node_modules\" (
