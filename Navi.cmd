@@ -56,6 +56,7 @@ if not exist "node_modules\" (
 
 REM Run the application
 if exist "index.js" (
+    title Navi
     node index.js
 ) else (
     echo index.js isn't found.
