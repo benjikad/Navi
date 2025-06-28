@@ -74,7 +74,7 @@ if not exist "node_modules\" (
     pause
     exit /b 1
 )
-echo ✅ Dependencies installed
+echo ✔ Dependencies installed
 
 echo [5/5] Starting Navi...
 if exist "index.js" (
