@@ -84,14 +84,9 @@ if exist "index.js" (
 ) else (
     echo ERROR: index.js not found!
     echo Creating a basic index.js for testing...
-    (
-        echo console.log^("Navi Voice Assistant - Basic test"^);
-        echo console.log^("index.js created successfully!"^);
-        echo setTimeout^(function^(^) { 
-        echo     console.log^("Navi is ready!"^); 
-        echo }, 1000^);
-    ) > index.js
-    echo Basic index.js created.
+    echo console.log("Navi Voice Assistant - Basic test"); > index.js
+    echo console.log("index.js created successfully!"); >> index.js
+    echo setTimeout(() => { console.log("Navi is ready!"); }, 1000); >> index.js
     node index.js
 )
 
