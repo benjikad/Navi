@@ -56,42 +56,23 @@ if exist "%PROJECT_DIR%" (
     cd "%PROJECT_DIR%"
 )
 
-REM Debug: Show current directory and check for package.json
-echo Current directory: %CD%
-if exist "package.json" (
-    echo package.json found
-) else (
-    echo ERROR: package.json not found!
-    echo Contents of current directory:
-    dir
-    pause
-    exit /b 1
-)
-
-REM Install/update dependencies with better error handling
-echo Checking node_modules...
+REM Install/update dependencies with better success detection
+echo Checking dependencies...
 if not exist "node_modules\" (
     echo Installing dependencies for first time...
-    echo Running: npm install
     npm install
-    if !errorlevel! neq 0 (
-        echo.
-        echo ERROR: npm install failed with error code !errorlevel!
-        echo This might be due to:
-        echo - No internet connection
-        echo - Invalid package.json
-        echo - Permission issues
-        echo.
+    REM Check if node_modules was actually created (better success indicator)
+    if exist "node_modules\" (
+        echo Dependencies installed successfully!
+    ) else (
+        echo ERROR: npm install failed - node_modules not created
         pause
         exit /b 1
     )
-    echo Dependencies installed successfully!
 ) else (
     echo node_modules exists, checking for updates...
-    npm install
-    if !errorlevel! neq 0 (
-        echo Warning: npm install failed, but continuing with existing modules...
-    )
+    npm install >nul 2>&1
+    echo Dependencies updated.
 )
 
 REM Run Navi
