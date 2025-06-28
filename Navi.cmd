@@ -81,3 +81,5 @@ if errorlevel 1 (
     echo Navi exited with an error!
     pause
 )
+
+pause
