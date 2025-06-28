@@ -73,6 +73,7 @@ if not exist "node_modules" (
 REM Run Navi
 echo Starting Navi Voice Agent...
 echo ===========================
+pause
 node index.js
 
 REM Keep window open if there's an error
@@ -81,5 +82,3 @@ if errorlevel 1 (
     echo Navi exited with an error!
     pause
 )
-
-pause
