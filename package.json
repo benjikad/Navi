@@ -18,15 +18,11 @@
   "author": "benjikad",
   "license": "MIT",
   "dependencies": {
-    "mic": "^2.1.2",
+    "naudiodon": "^2.3.4",
     "wav": "^1.0.2",
     "speaker": "^0.5.4",
-    "node-wav": "^0.0.2",
     "compromise": "^14.10.0",
-    "say": "^0.16.0",
-    "audio-buffer-utils": "^5.1.2",
-    "web-audio-api": "^0.2.2",
-    "node-record-lpcm16": "^1.0.1"
+    "say": "^0.16.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
