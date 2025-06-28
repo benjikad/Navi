@@ -1,1 +1,38 @@
-[]
+{
+  "name": "navi-voice-assistant",
+  "version": "1.0.0",
+  "description": "Local voice assistant for Windows - like Siri but offline",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "voice-assistant",
+    "speech-recognition",
+    "windows",
+    "offline",
+    "local"
+  ],
+  "author": "benjikad",
+  "license": "MIT",
+  "dependencies": {
+    "@picovoice/porcupine-node": "^3.0.2",
+    "node-record-lpcm16": "^1.0.1",
+    "whisper-node": "^0.1.2",
+    "compromise": "^14.10.0",
+    "speaker": "^0.5.4",
+    "wav": "^1.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benjikad/Navi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/benjikad/Navi/issues"
+  },
+  "homepage": "https://github.com/benjikad/Navi#readme"
+}
