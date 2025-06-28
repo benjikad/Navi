@@ -50,19 +50,18 @@ const audioOptions = {
 // Create audio input stream
 function createAudioInput() {
     try {
-        // Check available methods in naudiodon
         console.log('🎤 Available naudiodon methods:', Object.keys(naudiodon));
-        
-        // Try different ways to create audio input
-        if (naudiodon.AudioInput) {
+
+        if (naudiodon.AudioIO) {
+            audioInput = new naudiodon.AudioIO({
+                inOptions: audioOptions
+            });
+        } else if (naudiodon.AudioInput) {
             audioInput = new naudiodon.AudioInput(audioOptions);
-        } else if (naudiodon.AudioIO) {
-            audioInput = new naudiodon.AudioIO(audioOptions);
         } else {
-            // Create readable stream directly
             audioInput = naudiodon.createReadStream(audioOptions);
         }
-        
+
         console.log('✅ Audio input created successfully');
         return true;
     } catch (error) {
@@ -70,6 +69,7 @@ function createAudioInput() {
         return false;
     }
 }
+
 
 // Voice Activity Detection (simple silence detection)
 function detectVoiceActivity(chunk) {
