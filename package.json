@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup-ai": "node setup-whisper.js"
   },
   "keywords": [
     "voice-assistant",
@@ -13,7 +14,9 @@
     "windows",
     "offline",
     "local",
-    "nodejs-only"
+    "nodejs-only",
+    "ai",
+    "whisper"
   ],
   "author": "benjikad",
   "license": "MIT",
@@ -22,7 +25,8 @@
     "wav": "^1.0.2",
     "speaker": "^0.5.4",
     "compromise": "^14.10.0",
-    "say": "^0.16.0"
+    "say": "^0.16.0",
+    "node-whisper": "^1.4.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
