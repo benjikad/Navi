@@ -26,7 +26,7 @@
     "speaker": "^0.5.4",
     "compromise": "^14.10.0",
     "say": "^0.16.0",
-    "node-whisper": "^1.4.0"
+    "@xenova/transformers": "^2.15.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
