@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const mic = require('mic');
+const portAudio = require('naudiodon');
 const wav = require('wav');
 const Speaker = require('speaker');
 const say = require('say');
@@ -10,8 +10,7 @@ class NaviVoiceAssistant {
     constructor() {
         this.isListening = false;
         this.isProcessingCommand = false;
-        this.micInstance = null;
-        this.micInputStream = null;
+        this.audioInput = null;
         this.audioBuffer = [];
         this.isRecordingCommand = false;
         this.silenceThreshold = 1000; // ms of silence before stopping command recording
@@ -30,24 +29,23 @@ class NaviVoiceAssistant {
         console.log('🤖 Initializing Navi Voice Assistant (Pure Node.js)...');
         
         try {
-            // Initialize microphone
-            this.micInstance = mic({
-                rate: this.sampleRate,
-                channels: this.channels,
-                debug: false,
-                exitOnSilence: 0,
-                fileType: 'wav',
-                device: 'default'
+            // Initialize audio input using naudiodon (no external dependencies)
+            this.audioInput = new portAudio.AudioIO({
+                inOptions: {
+                    channelCount: this.channels,
+                    sampleFormat: portAudio.SampleFormat16Bit,
+                    sampleRate: this.sampleRate,
+                    deviceId: -1, // default input device
+                    closeOnError: false
+                }
             });
             
-            this.micInputStream = this.micInstance.getAudioStream();
-            
-            console.log('🎤 Microphone initialized successfully');
+            console.log('🎤 Audio input initialized successfully');
             console.log('🎤 Listening for "Hey Navi" wake word...');
             
             this.startListening();
         } catch (error) {
-            console.error('❌ Failed to initialize microphone:', error.message);
+            console.error('❌ Failed to initialize audio input:', error.message);
             console.log('💡 Make sure your microphone is connected and accessible');
         }
     }
@@ -55,25 +53,18 @@ class NaviVoiceAssistant {
     startListening() {
         this.isListening = true;
         
-        this.micInputStream.on('data', (data) => {
+        this.audioInput.on('data', (data) => {
             if (!this.isListening) return;
             this.processAudioData(data);
         });
 
-        this.micInputStream.on('error', (error) => {
-            console.error('❌ Microphone error:', error);
+        this.audioInput.on('error', (error) => {
+            console.error('❌ Audio input error:', error);
             this.restartListening();
         });
 
-        this.micInputStream.on('silence', () => {
-            // Handle silence detection
-            if (this.isRecordingCommand) {
-                this.handleSilence();
-            }
-        });
-
-        // Start the microphone
-        this.micInstance.start();
+        // Start audio input
+        this.audioInput.start();
     }
 
     processAudioData(data) {
@@ -417,14 +408,14 @@ class NaviVoiceAssistant {
     }
 
     restartListening() {
-        console.log('🔄 Restarting microphone...');
+        console.log('🔄 Restarting audio input...');
         
         try {
-            if (this.micInstance) {
-                this.micInstance.stop();
+            if (this.audioInput) {
+                this.audioInput.quit();
             }
         } catch (error) {
-            console.log('Error stopping mic:', error.message);
+            console.log('Error stopping audio input:', error.message);
         }
         
         this.wakeWordBuffer = [];
@@ -441,8 +432,8 @@ class NaviVoiceAssistant {
         console.log('🧹 Cleaning up resources...');
         
         try {
-            if (this.micInstance) {
-                this.micInstance.stop();
+            if (this.audioInput) {
+                this.audioInput.quit();
             }
             if (this.silenceTimer) {
                 clearTimeout(this.silenceTimer);
@@ -470,22 +461,4 @@ process.on('uncaughtException', (error) => {
 });
 
 // Start the assistant
-console.log(`
-╔══════════════════════════════════════╗
-║    NAVI VOICE ASSISTANT - NODE.JS    ║
-║                                      ║
-║  🟢 100% PURE NODE.JS - NO EXTERNALS ║
-║  🔒 100% LOCAL - NO INTERNET NEEDED  ║
-║                                      ║
-║  Say "Hey Navi" followed by:         ║
-║  • "test" - Test the system          ║
-║  • "time" - Get current time         ║
-║  • "date" - Get current date         ║
-║  • "hello" - Get a greeting          ║
-║  • "stop" - Shutdown Navi            ║
-║                                      ║
-║  Press Ctrl+C to exit                ║
-╚══════════════════════════════════════╝
-`);
-
 const navi = new NaviVoiceAssistant();
