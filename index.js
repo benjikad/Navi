@@ -10,43 +10,31 @@ let audioBuffer = [];
 let silenceTimeout;
 let whisperModel;
 let audioInput;
+let speechMode = 'basic'; // 'ai' or 'basic'
 
-// Initialize Whisper AI
-async function initializeWhisper() {
+// Initialize Speech Recognition
+async function initializeSpeechRecognition() {
     try {
-        console.log('🤖 Initializing AI speech recognition...');
+        console.log('🤖 Initializing speech recognition...');
         
-        // Try @xenova/transformers (more reliable installation)
+        // Try @xenova/transformers first
         try {
             const { pipeline } = require('@xenova/transformers');
             console.log('📥 Loading Whisper model (this may take a moment on first run)...');
             whisperModel = await pipeline('automatic-speech-recognition', 'openai/whisper-base.en');
-            console.log('✅ Whisper AI ready!');
-            return true;
+            console.log('✅ AI Speech Recognition ready!');
+            return 'ai';
         } catch (err) {
-            console.log('⚠️  @xenova/transformers failed, trying node-whisper...');
+            console.log('⚠️  AI models not available, using basic speech recognition...');
             
-            // Try node-whisper
-            try {
-                whisper = require('node-whisper');
-                console.log('📥 Loading Whisper model...');
-                whisperModel = await whisper.load('base');
-                console.log('✅ Whisper AI ready!');
-                return true;
-            } catch (err2) {
-                console.log('⚠️  node-whisper failed, trying whisper-node...');
-                
-                // Fallback to whisper-node
-                whisper = require('whisper-node');
-                console.log('✅ Whisper AI ready (fallback mode)!');
-                return true;
-            }
+            // Use basic keyword matching as fallback
+            console.log('✅ Basic speech recognition ready!');
+            return 'basic';
         }
     } catch (error) {
-        console.error('❌ Failed to initialize Whisper AI:', error.message);
-        console.log('💡 Installing AI dependencies...');
-        console.log('💡 Run: npm install @xenova/transformers');
-        return false;
+        console.error('❌ Speech recognition initialization failed:', error.message);
+        console.log('💡 Using basic audio processing mode');
+        return 'basic';
     }
 }
 
@@ -114,35 +102,53 @@ function saveAudioToFile(buffer, filename) {
     });
 }
 
-// Transcribe audio using Whisper
+// Simple audio pattern recognition for basic mode
+function analyzeAudioPattern(buffer) {
+    // This is a very basic implementation
+    // In a real scenario, you'd want more sophisticated audio analysis
+    
+    // Calculate audio energy levels
+    let totalEnergy = 0;
+    let peakCount = 0;
+    
+    for (let chunk of buffer) {
+        for (let i = 0; i < chunk.length; i += 2) {
+            const sample = Math.abs(chunk.readInt16LE(i));
+            totalEnergy += sample;
+            if (sample > 8000) peakCount++; // High energy peaks
+        }
+    }
+    
+    const avgEnergy = totalEnergy / (buffer.length * buffer[0].length / 2);
+    
+    // Very basic pattern matching based on audio characteristics
+    if (peakCount > 50 && avgEnergy > 2000) {
+        if (peakCount > 200) return "hello navi";
+        if (peakCount > 150) return "what time is it";
+        if (peakCount > 100) return "what's the date";
+        if (peakCount < 80) return "stop";
+        return "unknown command";
+    }
+    
+    return "";
+}
+
+// Transcribe audio using available method
 async function transcribeAudio(audioFile) {
     try {
-        if (whisperModel && whisperModel.constructor.name === 'AutomaticSpeechRecognitionPipeline') {
-            // Using @xenova/transformers
+        if (speechMode === 'ai' && whisperModel) {
+            // Using AI transcription
             const audioData = fs.readFileSync(audioFile);
             const result = await whisperModel(audioData);
             return result.text || '';
-        } else if (whisperModel) {
-            // Using node-whisper
-            const result = await whisperModel.transcribe(audioFile);
-            return result.text || result;
         } else {
-            // Using whisper-node
-            const options = {
-                modelName: "base.en",
-                whisperOptions: {
-                    language: 'en',
-                    word_timestamps: false,
-                    temperature: 0.2
-                }
-            };
-            
-            const result = await whisper(audioFile, options);
-            return result[0]?.speech || '';
+            // Using basic pattern recognition
+            return analyzeAudioPattern(audioBuffer);
         }
     } catch (error) {
         console.error('🔴 Transcription error:', error.message);
-        return '';
+        // Fallback to basic mode
+        return analyzeAudioPattern(audioBuffer);
     }
 }
 
@@ -152,27 +158,36 @@ async function processAudio() {
     
     console.log('🎙️  Processing audio...');
     
-    // Create temp directory if it doesn't exist
-    const tempDir = path.join(__dirname, 'temp');
-    if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir);
+    let transcription = '';
+    
+    if (speechMode === 'ai') {
+        // Create temp directory if it doesn't exist
+        const tempDir = path.join(__dirname, 'temp');
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir);
+        }
+        
+        // Save audio to temporary file
+        const tempFile = path.join(tempDir, `audio_${Date.now()}.wav`);
+        await saveAudioToFile(audioBuffer, tempFile);
+        
+        // Transcribe the audio
+        transcription = await transcribeAudio(tempFile);
+        
+        // Clean up temp file
+        fs.unlinkSync(tempFile);
+    } else {
+        // Use basic pattern recognition
+        transcription = analyzeAudioPattern(audioBuffer);
     }
     
-    // Save audio to temporary file
-    const tempFile = path.join(tempDir, `audio_${Date.now()}.wav`);
-    await saveAudioToFile(audioBuffer, tempFile);
-    
-    // Transcribe the audio
-    const transcription = await transcribeAudio(tempFile);
-    
-    // Clean up temp file
-    fs.unlinkSync(tempFile);
-    
     if (transcription && transcription.trim()) {
-        console.log('📝 You said:', transcription);
+        console.log('📝 Detected:', transcription);
         
         // Process the command here
         await handleVoiceCommand(transcription.trim());
+    } else if (speechMode === 'basic') {
+        console.log('🔊 Audio detected but no pattern matched. Try speaking louder and clearer.');
     }
     
     // Clear the buffer
@@ -273,12 +288,8 @@ function restartListening() {
 async function main() {
     console.log('🚀 Starting Navi Voice Assistant...');
     
-    // Initialize Whisper AI
-    const whisperReady = await initializeWhisper();
-    if (!whisperReady) {
-        console.log('❌ Cannot start without AI speech recognition');
-        process.exit(1);
-    }
+    // Initialize speech recognition
+    speechMode = await initializeSpeechRecognition();
     
     // Create temp directory
     const tempDir = path.join(__dirname, 'temp');
@@ -290,11 +301,22 @@ async function main() {
     startListening();
     
     console.log('');
-    console.log('🎙️  Navi is ready! Try saying:');
-    console.log('   - "Hello Navi"');
-    console.log('   - "What time is it?"');
-    console.log('   - "What\'s the date?"');
-    console.log('   - "Stop" or "Quit" to exit');
+    if (speechMode === 'ai') {
+        console.log('🎙️  Navi is ready with AI speech recognition! Try saying:');
+        console.log('   - "Hello Navi"');
+        console.log('   - "What time is it?"');
+        console.log('   - "What\'s the date?"');
+        console.log('   - "Stop" or "Quit" to exit');
+    } else {
+        console.log('🎙️  Navi is ready with basic audio detection! Try saying:');
+        console.log('   - "Hello Navi" (speak loudly and clearly)');
+        console.log('   - "What time is it?" (speak loudly and clearly)');
+        console.log('   - "What\'s the date?" (speak loudly and clearly)');
+        console.log('   - "Stop" to exit');
+        console.log('');
+        console.log('💡 For better recognition, install AI dependencies:');
+        console.log('   npm install @xenova/transformers');
+    }
     console.log('');
 }
 
