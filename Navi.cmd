@@ -21,7 +21,6 @@ if errorlevel 1 (
 set REPO_URL=https://github.com/benjikad/Navi.git
 set TEMP_DIR=tempnavi
 
-echo Installing Navi...
 
 if exist ".git\" (
     git reset --hard HEAD >nul 2>&1
@@ -31,6 +30,8 @@ if exist ".git\" (
     git clone %REPO_URL% %TEMP_DIR% >nul 2>&1
     xcopy "%TEMP_DIR%\*" "." /E /Y /Q >nul 2>&1
     rmdir /s /q "%TEMP_DIR%" >nul 2>&1
+
+    echo Installing Navi...
 )
 
 call npm install >nul 2>&1
