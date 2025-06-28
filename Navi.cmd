@@ -38,10 +38,29 @@ echo [3/5] Downloading/Updating Navi...
 if exist "%PROJECT_DIR%" (
     echo Updating existing installation...
     cd "%PROJECT_DIR%"
+    
+    REM Reset any local changes and force update
+    echo Cleaning up local changes...
+    git reset --hard HEAD >nul 2>&1
+    git clean -fd >nul 2>&1
+    
+    echo Pulling latest updates...
     git pull origin main
+    if errorlevel 1 (
+        echo Update failed, doing fresh download...
+        cd ..
+        rmdir /s /q "%PROJECT_DIR%"
+        goto :fresh_clone
+    )
 ) else (
+    :fresh_clone
     echo Fresh installation - downloading from GitHub...
     git clone %REPO_URL% %PROJECT_DIR%
+    if errorlevel 1 (
+        echo ❌ Failed to download from GitHub!
+        pause
+        exit /b 1
+    )
     cd "%PROJECT_DIR%"
 )
 
