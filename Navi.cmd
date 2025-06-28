@@ -1,95 +1,71 @@
 @echo off
 setlocal enabledelayedexpansion
-title Navi Voice Agent
+title Navi Voice Assistant
 
-REM Check if Git exists
+echo ====================================
+echo     Navi Voice Assistant Installer
+echo ====================================
+echo.
+
+REM Check dependencies
+echo [1/5] Checking Git...
 git --version >nul 2>&1
 if errorlevel 1 (
-    echo Git is not installed! Please install Git from https://git-scm.com/downloads/win
+    echo ❌ Git not found! Installing Git...
     start https://git-scm.com/downloads/win
+    echo Please install Git and run this script again.
     pause
     exit /b 1
 )
+echo ✅ Git found
 
-REM Check if Node.js exists
+echo [2/5] Checking Node.js...
 node --version >nul 2>&1
 if errorlevel 1 (
-    echo Node.js not found! Please install Node.js first.
-    echo Opening Node.js download page...
+    echo ❌ Node.js not found! Opening download page...
     start https://nodejs.org/
+    echo Please install Node.js and run this script again.
     pause
     exit /b 1
 )
+echo ✅ Node.js found
 
-REM Set project details
+REM Project setup
 set REPO_URL=https://github.com/benjikad/Navi.git
 set PROJECT_DIR=Navi-Project
 
-REM Check if project exists, clone or update
+echo [3/5] Downloading/Updating Navi...
 if exist "%PROJECT_DIR%" (
-    echo Navi found. Checking for updates...
+    echo Updating existing installation...
     cd "%PROJECT_DIR%"
-    
-    REM Check if we're in a git repository
-    git status >nul 2>&1
-    if errorlevel 1 (
-        echo Project folder corrupted. Re-downloading...
-        cd ..
-        rmdir /s /q "%PROJECT_DIR%"
-        goto :clone
-    ) else (
-        echo Pulling latest updates...
-        git pull origin main
-        if errorlevel 1 (
-            echo Update failed! Continuing with current version...
-        )
-    )
+    git pull origin main
 ) else (
-    :clone
-    echo Downloading Navi from GitHub...
+    echo Fresh installation - downloading from GitHub...
     git clone %REPO_URL% %PROJECT_DIR%
-    if errorlevel 1 (
-        echo Failed to download Navi!
-        pause
-        exit /b 1
-    )
     cd "%PROJECT_DIR%"
 )
 
-REM Install/update dependencies
-echo Checking dependencies...
+echo [4/5] Installing dependencies...
+call npm install
 if not exist "node_modules\" (
-    echo Installing dependencies for first time...
-    echo This may take a few minutes...
-    call npm install
-    if exist "node_modules\" (
-        echo Dependencies installed successfully!
-    ) else (
-        echo ERROR: npm install failed - node_modules not created
-        pause
-        exit /b 1
-    )
-) else (
-    echo node_modules exists, checking for updates...
-    call npm install >nul 2>&1
-    echo Dependencies checked.
+    echo ❌ Failed to install dependencies!
+    pause
+    exit /b 1
 )
+echo ✅ Dependencies installed
 
-REM Run Navi
-echo.
-echo Starting Navi Voice Agent...
-echo ===========================
+echo [5/5] Starting Navi...
 if exist "index.js" (
+    echo ✅ Found index.js - starting Navi...
+    echo.
     node index.js
 ) else (
-    echo ERROR: index.js not found!
-    echo Creating a basic index.js for testing...
-    echo console.log("Navi Voice Assistant - Basic test"); > index.js
-    echo console.log("index.js created successfully!"); >> index.js
-    echo setTimeout(() => { console.log("Navi is ready!"); }, 1000); >> index.js
-    node index.js
+    echo ❌ index.js not found in repository!
+    echo Please make sure index.js exists in your GitHub repo.
+    pause
+    exit /b 1
 )
 
 echo.
-echo Navi finished running.
+echo Navi has stopped.
 pause
