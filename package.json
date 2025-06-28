@@ -1,7 +1,7 @@
 {
   "name": "navi-voice-assistant",
   "version": "1.0.0",
-  "description": "Local voice assistant for Windows - like Siri but offline",
+  "description": "Local voice assistant for Windows - like Siri but offline - Node.js only",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -12,17 +12,24 @@
     "speech-recognition",
     "windows",
     "offline",
-    "local"
+    "local",
+    "nodejs-only"
   ],
   "author": "benjikad",
   "license": "MIT",
   "dependencies": {
-    "@picovoice/porcupine-node": "^3.0.2",
-    "node-record-lpcm16": "^1.0.1",
-    "whisper-node": "^0.1.2",
-    "compromise": "^14.10.0",
+    "mic": "^2.1.2",
+    "wav": "^1.0.2",
     "speaker": "^0.5.4",
-    "wav": "^1.0.2"
+    "node-wav": "^0.0.2",
+    "compromise": "^14.10.0",
+    "say": "^0.16.0",
+    "audio-buffer-utils": "^5.1.2",
+    "web-audio-api": "^0.2.2",
+    "node-record-lpcm16": "^1.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   },
   "engines": {
     "node": ">=16.0.0"
@@ -34,5 +41,10 @@
   "bugs": {
     "url": "https://github.com/benjikad/Navi/issues"
   },
-  "homepage": "https://github.com/benjikad/Navi#readme"
+  "homepage": "https://github.com/benjikad/Navi#readme",
+  "os": [
+    "win32",
+    "darwin",
+    "linux"
+  ]
 }
