@@ -9,30 +9,43 @@ let isListening = false;
 let audioBuffer = [];
 let silenceTimeout;
 let whisperModel;
+let audioInput;
 
 // Initialize Whisper AI
 async function initializeWhisper() {
     try {
         console.log('🤖 Initializing AI speech recognition...');
         
-        // Try node-whisper first
+        // Try @xenova/transformers (more reliable installation)
         try {
-            whisper = require('node-whisper');
+            const { pipeline } = require('@xenova/transformers');
             console.log('📥 Loading Whisper model (this may take a moment on first run)...');
-            whisperModel = await whisper.load('base'); // Downloads ~140MB once
+            whisperModel = await pipeline('automatic-speech-recognition', 'openai/whisper-base.en');
             console.log('✅ Whisper AI ready!');
             return true;
         } catch (err) {
-            console.log('⚠️  node-whisper failed, trying whisper-node...');
+            console.log('⚠️  @xenova/transformers failed, trying node-whisper...');
             
-            // Fallback to whisper-node
-            whisper = require('whisper-node');
-            console.log('✅ Whisper AI ready (fallback mode)!');
-            return true;
+            // Try node-whisper
+            try {
+                whisper = require('node-whisper');
+                console.log('📥 Loading Whisper model...');
+                whisperModel = await whisper.load('base');
+                console.log('✅ Whisper AI ready!');
+                return true;
+            } catch (err2) {
+                console.log('⚠️  node-whisper failed, trying whisper-node...');
+                
+                // Fallback to whisper-node
+                whisper = require('whisper-node');
+                console.log('✅ Whisper AI ready (fallback mode)!');
+                return true;
+            }
         }
     } catch (error) {
         console.error('❌ Failed to initialize Whisper AI:', error.message);
-        console.log('💡 Make sure you ran: npm install node-whisper');
+        console.log('💡 Installing AI dependencies...');
+        console.log('💡 Run: npm install @xenova/transformers');
         return false;
     }
 }
@@ -47,7 +60,28 @@ const audioOptions = {
 };
 
 // Create audio input stream
-const audioInput = new naudiodon.AudioInput(audioOptions);
+function createAudioInput() {
+    try {
+        // Check available methods in naudiodon
+        console.log('🎤 Available naudiodon methods:', Object.keys(naudiodon));
+        
+        // Try different ways to create audio input
+        if (naudiodon.AudioInput) {
+            audioInput = new naudiodon.AudioInput(audioOptions);
+        } else if (naudiodon.AudioIO) {
+            audioInput = new naudiodon.AudioIO(audioOptions);
+        } else {
+            // Create readable stream directly
+            audioInput = naudiodon.createReadStream(audioOptions);
+        }
+        
+        console.log('✅ Audio input created successfully');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to create audio input:', error.message);
+        return false;
+    }
+}
 
 // Voice Activity Detection (simple silence detection)
 function detectVoiceActivity(chunk) {
@@ -83,7 +117,12 @@ function saveAudioToFile(buffer, filename) {
 // Transcribe audio using Whisper
 async function transcribeAudio(audioFile) {
     try {
-        if (whisperModel) {
+        if (whisperModel && whisperModel.constructor.name === 'AutomaticSpeechRecognitionPipeline') {
+            // Using @xenova/transformers
+            const audioData = fs.readFileSync(audioFile);
+            const result = await whisperModel(audioData);
+            return result.text || '';
+        } else if (whisperModel) {
             // Using node-whisper
             const result = await whisperModel.transcribe(audioFile);
             return result.text || result;
@@ -181,6 +220,12 @@ async function handleVoiceCommand(text) {
 function startListening() {
     if (isListening) return;
     
+    // Create audio input first
+    if (!createAudioInput()) {
+        console.error('❌ Cannot start listening - audio input failed');
+        return;
+    }
+    
     isListening = true;
     console.log('👂 Listening for voice commands... (speak now)');
     
@@ -209,7 +254,12 @@ function startListening() {
         restartListening();
     });
     
-    audioInput.start();
+    // Start the audio stream
+    if (audioInput.start) {
+        audioInput.start();
+    } else if (audioInput.resume) {
+        audioInput.resume();
+    }
 }
 
 // Restart listening after error
