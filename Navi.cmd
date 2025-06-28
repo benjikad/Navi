@@ -56,25 +56,57 @@ if exist "%PROJECT_DIR%" (
     cd "%PROJECT_DIR%"
 )
 
-REM Install/update dependencies
-if not exist "node_modules" (
+REM Debug: Show current directory and check for package.json
+echo Current directory: %CD%
+if exist "package.json" (
+    echo package.json found
+) else (
+    echo ERROR: package.json not found!
+    echo Contents of current directory:
+    dir
+    pause
+    exit /b 1
+)
+
+REM Install/update dependencies with better error handling
+echo Checking node_modules...
+if not exist "node_modules\" (
     echo Installing dependencies for first time...
+    echo Running: npm install
     npm install
-    if errorlevel 1 (
-        echo Failed to install dependencies!
+    if !errorlevel! neq 0 (
+        echo.
+        echo ERROR: npm install failed with error code !errorlevel!
+        echo This might be due to:
+        echo - No internet connection
+        echo - Invalid package.json
+        echo - Permission issues
+        echo.
         pause
         exit /b 1
     )
+    echo Dependencies installed successfully!
 ) else (
-    echo Checking for dependency updates...
-    npm install >nul 2>&1
+    echo node_modules exists, checking for updates...
+    npm install
+    if !errorlevel! neq 0 (
+        echo Warning: npm install failed, but continuing with existing modules...
+    )
 )
 
 REM Run Navi
+echo.
 echo Starting Navi Voice Agent...
 echo ===========================
-pause
-node index.js
+if exist "index.js" (
+    node index.js
+) else (
+    echo ERROR: index.js not found!
+    echo Available files:
+    dir *.js
+    pause
+    exit /b 1
+)
 
 REM Keep window open if there's an error
 if errorlevel 1 (
@@ -82,3 +114,7 @@ if errorlevel 1 (
     echo Navi exited with an error!
     pause
 )
+
+echo.
+echo Navi closed normally.
+pause
