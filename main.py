@@ -68,7 +68,7 @@ class ContinuousSpeechDetector:
         
         # Check amplitude threshold
         max_amp = abs(audio_chunk * 32767).max()
-        if max_amp < 650:
+        if max_amp < 450:
             return False
         
         # Use VAD for 30ms frames
