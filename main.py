@@ -24,11 +24,6 @@ VAD_MODE = 3
 PRE_SPEECH_BUFFER_MS = 500  # 500ms before speech detection
 POST_SPEECH_SILENCE_MS = 500  # 500ms of silence to capture after speech ends
 
-# === SETUP OUTPUT DIR ===
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-recordings_dir = os.path.join(parent_dir, "recordings")
-os.makedirs(recordings_dir, exist_ok=True)
-
 # === LOAD MODEL ===
 print("Loading FasterWhisper model...")
 model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
