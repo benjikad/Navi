@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 title Starting Navi
-
+ 
 REM Check if Git is installed
 git --version >nul 2>&1
 if errorlevel 1 (
