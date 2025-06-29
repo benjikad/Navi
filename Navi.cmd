@@ -96,7 +96,8 @@ if exist ".git" (
     rmdir /s /q "%TEMP_DIR%" >nul 2>&1
     
     echo %REMOTE_COMMIT%>"%COMMIT_FILE%"
-    pause Navi is ready, press any key to continue.
+    echo Navi is ready,
+    pause
 )
 
 REM Run the program
