@@ -11,19 +11,10 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM Check for Node.js
-node --version >nul 2>&1
-if errorlevel 1 (
-    echo Node.js isn't installed.
-    start https://nodejs.org/
-    pause
-    exit /b 1
-)
-
 REM Check for Python (required for Whisper dependencies)
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo Python isn't installed. Required for AI speech recognition.
+    echo Python isn't installed.
     echo Please install Python from: https://www.python.org/downloads/
     start https://www.python.org/downloads/
     pause
