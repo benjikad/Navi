@@ -46,7 +46,7 @@ if "%LOCAL_COMMIT%"=="%REMOTE_COMMIT%" (
     goto :run_program
 ) else (
     if "%LOCAL_COMMIT%"=="" (
-        echo No local version found. Downloading Navi...
+        echo Downloading Navi...
     ) else (
         echo Update available! Local: %LOCAL_COMMIT:~0,8% Remote: %REMOTE_COMMIT:~0,8%
         echo Downloading latest version...
@@ -61,7 +61,7 @@ if exist ".git" (
     for /f "tokens=*" %%i in ('git config --get remote.origin.url 2^>nul') do set CURRENT_REPO=%%i
     
     if "!CURRENT_REPO!"=="%REPO_URL%" (
-        echo Pulling latest updates from origin...
+        echo Pulling...
         git pull origin main
         if errorlevel 1 (
             echo Failed to pull updates. Continuing with current version...
@@ -75,13 +75,9 @@ if exist ".git" (
         echo Continuing with current version...
     )
 ) else (
-    echo No Git repository found. Downloading Navi...
-    
-    REM Clean up any existing temp directory
     if exist "%TEMP_DIR%" rmdir /s /q "%TEMP_DIR%"
     
-    REM Clone the repository
-    echo Cloning repository...
+    echo Cloning...
     git clone %REPO_URL% %TEMP_DIR%
     if errorlevel 1 (
         echo Failed to clone repository. Please check your internet connection.
@@ -89,8 +85,7 @@ if exist ".git" (
         exit /b 1
     )
     
-    REM Copy files from temp directory to current directory
-    echo Installing Navi files...
+    echo Installing...
     xcopy "%TEMP_DIR%\*" "." /E /Y /Q >nul 2>&1
     if errorlevel 1 (
         echo Failed to copy files.
@@ -98,12 +93,10 @@ if exist ".git" (
         exit /b 1
     )
     
-    REM Clean up temp directory
     rmdir /s /q "%TEMP_DIR%" >nul 2>&1
     
-    REM Store the commit hash for future comparisons
     echo %REMOTE_COMMIT%>"%COMMIT_FILE%"
-    echo Navi downloaded and installed successfully!
+    pause Navi is ready, press any key to continue.
 )
 
 REM Run the program
