@@ -44,7 +44,7 @@ if exist ".git\" (
 REM Run the program
 if exist "main.py" (
     title "Navi - AI Voice Assistant"
-    echo Starting Navi...
+    echo Starting Navi... (v2)
     python main.py
 ) else (
     echo main.py isn't found.
