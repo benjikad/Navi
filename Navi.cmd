@@ -48,41 +48,12 @@ if exist ".git\" (
     echo Installing Navi...
 )
 
-REM Install dependencies (including AI speech-to-text)
-echo Installing dependencies...
-call npm install >nul 2>&1
-
-REM Install AI speech-to-text dependencies
-echo Installing AI speech recognition...
-call npm install node-whisper >nul 2>&1
-
-REM Check if dependencies are installed
-if not exist "node_modules\" (
-    echo Dependencies installation failed.
-    pause
-    exit /b 1
-)
-
-REM Check if Whisper is installed
-if not exist "node_modules\node-whisper\" (
-    echo AI speech recognition installation failed.
-    echo Trying alternative method...
-    call npm install whisper-node >nul 2>&1
-)
-
-REM Download Whisper model on first run
-if not exist "models\" (
-    echo Setting up AI models... This may take a few minutes on first run.
-    mkdir models >nul 2>&1
-)
-
-REM Run the application
-if exist "index.js" (
+if exist "main.py" (
     title Navi - AI Voice Assistant
     echo Starting Navi...
-    node index.js
+    python main.py
 ) else (
-    echo index.js isn't found.
+    echo main.py isn't found.
     pause
     exit /b 1
 )
