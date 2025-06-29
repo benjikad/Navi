@@ -1,6 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
-title Starting Navi
+title "Starting Navi"
 
 REM Check if Git is installed
 git --version >nul 2>&1
@@ -64,8 +64,9 @@ if exist ".git\" (
     echo Installing Navi...
 )
 
+REM Run the program
 if exist "main.py" (
-    title Navi - AI Voice Assistant
+    title "Navi - AI Voice Assistant"
     echo Starting Navi...
     python main.py
 ) else (
@@ -73,5 +74,4 @@ if exist "main.py" (
     pause
     exit /b 1
 )
-
 pause
