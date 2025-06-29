@@ -98,6 +98,7 @@ if exist ".git" (
     echo %REMOTE_COMMIT%>"%COMMIT_FILE%"
     echo Navi is ready,
     pause
+    cls
 )
 
 REM Run the program
