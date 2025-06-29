@@ -23,6 +23,35 @@ if errorlevel 1 (
 
 set REPO_URL=https://github.com/benjikad/Navi.git
 set TEMP_DIR=tempnavi
+set COMMIT_FILE=.navi_commit
+
+REM Get the latest commit hash from remote repository
+echo Checking for updates...
+for /f "tokens=1" %%i in ('git ls-remote %REPO_URL% HEAD 2^>nul') do set REMOTE_COMMIT=%%i
+
+if "%REMOTE_COMMIT%"=="" (
+    echo Failed to check remote repository. Continuing with current version...
+    goto :run_program
+)
+
+REM Check if we have a stored commit hash
+set LOCAL_COMMIT=
+if exist "%COMMIT_FILE%" (
+    set /p LOCAL_COMMIT=<"%COMMIT_FILE%"
+)
+
+REM Compare commits
+if "%LOCAL_COMMIT%"=="%REMOTE_COMMIT%" (
+    echo No updates available. Current version is up to date.
+    goto :run_program
+) else (
+    if "%LOCAL_COMMIT%"=="" (
+        echo No local version found. Downloading Navi...
+    ) else (
+        echo Update available! Local: %LOCAL_COMMIT:~0,8% Remote: %REMOTE_COMMIT:~0,8%
+        echo Downloading latest version...
+    )
+)
 
 REM Check if current directory is a Git repository (check for .git directory)
 if exist ".git" (
@@ -71,10 +100,14 @@ if exist ".git" (
     
     REM Clean up temp directory
     rmdir /s /q "%TEMP_DIR%" >nul 2>&1
+    
+    REM Store the commit hash for future comparisons
+    echo %REMOTE_COMMIT%>"%COMMIT_FILE%"
     echo Navi downloaded and installed successfully!
 )
 
 REM Run the program
+:run_program
 if exist "main.py" (
     title "Navi - AI Voice Assistant"
     echo Starting Navi...
