@@ -11,7 +11,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM Check if Python is installed
+REM Check if Python is installed..
 python --version >nul 2>&1
 if errorlevel 1 (
     echo Python isn't installed.
