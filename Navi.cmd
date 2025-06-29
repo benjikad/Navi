@@ -2,6 +2,8 @@
 setlocal enabledelayedexpansion
 title Starting Navi
 
+REM TODO: remove other files, other than "Navi.cmd" IF updating
+
 REM Check for Git
 git --version >nul 2>&1
 if errorlevel 1 (
